@@ -43,17 +43,20 @@ void setup() {
     delay(1);
   }
 
-  Serial.println("Adafruit VL53L0X test");
+  log1("Adafruit VL53L0X test",LogLevel::DEBUG );
   if (!lox.begin()) {
-    Serial.println(F("Failed to boot VL53L0X"));
-    while (1);
+    log1("Failed to boot VL53L0X", LogLevel::DEBUG);
+    //while (1);
   }
   // power
-  Serial.println(F("VL53L0X API Simple Ranging example\n\n"));
+  log1("VL53L0X API Simple Ranging example\n\n", LogLevel::DEBUG);
+
+ ESP.wdtEnable(WDTO_8S );
 }
 
 
 void loop() {
+  ESP.wdtFeed();
   http_server.handleClient();
 }
 
@@ -167,9 +170,9 @@ void handle_http_metrics() {
   VL53L0X_RangingMeasurementData_t measure;
 
   Serial.print("Reading a measurement... ");
-  lox.rangingTest(&measure, false); // pass in 'true' to get debug data printout!
+  lox.rangingTest(&measure, false); 
   int hightInMM;
-  if (measure.RangeStatus != 4) {  // phase failures have incorrect data
+  if (measure.RangeStatus != 4) {  
     Serial.print("Distance (mm): "); Serial.println(measure.RangeMilliMeter);
     hightInMM = measure.RangeMilliMeter;
   } else {
@@ -177,7 +180,6 @@ void handle_http_metrics() {
     http_server.send(500, "text/plain; charset=utf-8", "Sensor error.");
     return;
   }
-
 
   char response[BUFSIZE];
   snprintf(response, BUFSIZE, response_template, hightInMM);
